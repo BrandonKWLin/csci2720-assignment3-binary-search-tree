@@ -1,5 +1,5 @@
 Brandon Lin
-bkl73754@uga.edu (811724748)
+Assignment 3
 
 Compile commands:
     javac -d bin src/NodeType.java
