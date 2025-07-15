@@ -7,283 +7,319 @@ import java.io.IOException;
 import java.util.Scanner;
 
 /**
-   Binary Search Tree Driver.
+ * Driver class to test the Binary Search Tree functionality.
  */
 public class BinarySearchTreeDriver {
+
     public static void main(String[] args) {
 
-        Scanner sc = new Scanner(System.in);
-        Scanner input;
-        String type;
-        String com;
-        String inputS;
-        Double inputD;
-        int inputI;
-        BinarySearchTree<String> listS = new BinarySearchTree<>();
-        BinarySearchTree<Integer> listI = new BinarySearchTree<>();
-        BinarySearchTree<Double> listD = new BinarySearchTree<>();
+        Scanner console = new Scanner(System.in);
+        String type = getTreeType(console);
 
-        System.out.print("Enter list type (i - int, d - double, s - string): ");
+        BinarySearchTree<String> treeStr = new BinarySearchTree<>();
+        BinarySearchTree<Integer> treeInt = new BinarySearchTree<>();
+        BinarySearchTree<Double> treeDouble = new BinarySearchTree<>();
+
+        loadDataFromFile(args, type, treeStr, treeInt, treeDouble);
+
+        printCommandMenu();
 
         while (true) {
+            System.out.print("Enter a command: ");
+            String command = console.next();
 
-            type = sc.next();
-
-            if (type.equals("i") || type.equals("s") || type.equals("d")) {
+            if (command.equals("i")) {
+                performInsert(console, type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("d")) {
+                performDelete(console, type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("p")) {
+                performPrint(type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("r")) {
+                performRetrieve(console, type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("l")) {
+                performLeafCount(type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("s")) {
+                performSingleParents(type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("c")) {
+                performCousins(console, type, treeStr, treeInt, treeDouble);
+            } else if (command.equals("q")) {
+                System.out.println("Exiting the program...");
                 break;
             } else {
-                System.out.print("Please enter a proper type (i - int, d - double, s - string): ");
-            } // no proper command
+                System.out.println("Invalid command. Try again.");
+            }
+        }
+    }
 
-        } // type of list : while
+    private static String getTreeType(Scanner sc) {
+        String type;
+        do {
+            System.out.print("Enter list type (i - int, d - double, s - string): ");
+            type = sc.next();
+        } while (!type.equals("i") && !type.equals("d") && !type.equals("s"));
+        return type;
+    }
+
+    private static void loadDataFromFile(
+            String[] args,
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
         try {
             File file = new File(args[0]);
-            input = new Scanner(file);
-            while (input.hasNext()) {
+            Scanner fileInput = new Scanner(file);
+
+            while (fileInput.hasNext()) {
                 try {
-                    if (type.equals("s")) {
-                        listS.insert(input.next());
-                    } else if (type.equals("d")) {
-                        listD.insert(input.nextDouble());
-                    } else if (type.equals("i")) {
-                        listI.insert(input.nextInt());
-                    } // else if
-                } catch (IllegalStateException e) {
-                } // try catch
-            } // while
-            input.close();
-        } catch (ArrayIndexOutOfBoundsException | IOException ioException) {
+                    switch (type) {
+                        case "s" -> treeStr.insert(fileInput.next());
+                        case "i" -> treeInt.insert(fileInput.nextInt());
+                        case "d" -> treeDouble.insert(fileInput.nextDouble());
+                    }
+                } catch (IllegalStateException ignored) {
+                    // Duplicate values are ignored
+                }
+            }
+            fileInput.close();
+        } catch (ArrayIndexOutOfBoundsException | IOException e) {
             System.err.println("Cannot open file or file not present.");
             System.exit(1);
         }
+    }
 
-        System.out.println("Commands:");
-        System.out.println("(i) - Insert Item"); // done
-        System.out.println("(d) - Delete Item"); // done
-        System.out.println("(p) - Print Tree"); // done
-        System.out.println("(r) - Retrieve Item"); // done
-        System.out.println("(l) - Count Leaf Nodes"); // done
-        System.out.println("(s) - Find Single Parents"); // done
-        System.out.println("(c) - Find Cousins"); // done
-        System.out.println("(q) - Quit program" + "\n"); // done
+    private static void printCommandMenu() {
+        System.out.println("""
+            Commands:
+            (i) - Insert Item
+            (d) - Delete Item
+            (p) - Print Tree
+            (r) - Retrieve Item
+            (l) - Count Leaf Nodes
+            (s) - Find Single Parents
+            (c) - Find Cousins
+            (q) - Quit program
+        """);
+    }
 
-        System.out.print("Enter a command: ");
+    private static void performInsert(
+            Scanner sc,
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
-        while (true) {
+        switch (type) {
+            case "s" -> {
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+                System.out.print("Enter a string to insert: ");
+                String input = sc.next();
+                try {
+                    treeStr.insert(input);
+                } catch (IllegalStateException e) {
+                    System.out.println(e.getMessage());
+                }
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+            }
+            case "i" -> {
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+                System.out.print("Enter an integer to insert: ");
+                int val = sc.nextInt();
+                try {
+                    treeInt.insert(val);
+                } catch (IllegalStateException e) {
+                    System.out.println(e.getMessage());
+                }
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+            }
+            case "d" -> {
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+                System.out.print("Enter a double to insert: ");
+                double val = sc.nextDouble();
+                try {
+                    treeDouble.insert(val);
+                } catch (IllegalStateException e) {
+                    System.out.println(e.getMessage());
+                }
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+            }
+        }
+    }
 
-            com = sc.next();
+    private static void performDelete(
+            Scanner sc,
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
-            if (com.equals("i")) {
-                if (type.equals("s")) {
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a string to insert: ");
-                    inputS = sc.next();
-                    try {
-                        listS.insert(inputS);
-                    } catch (IllegalStateException e) {
-                        System.out.println(e.getMessage());
-                    } // try catch
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                } else if (type.equals("d")) {
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number to insert: ");
-                    inputD = sc.nextDouble();
-                    try {
-                        listD.insert( inputD);
-                    } catch (IllegalStateException e) {
-                        System.out.println(e.getMessage());
-                    } // try catch
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                } else if (type.equals("i")) {
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number to insert: ");
-                    inputI = sc.nextInt();
-                    try {
-                        listI.insert(inputI);
-                    } catch (IllegalStateException e) {
-                        System.out.println(e.getMessage());
-                    } // try catch
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                } // else
-                System.out.print("Enter a command: ");
-            } // if : command i : Insert Item
+        switch (type) {
+            case "s" -> {
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+                System.out.print("Enter a string to delete: ");
+                String input = sc.next();
+                treeStr.delete(treeStr.getRoot(), input);
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+            }
+            case "i" -> {
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+                System.out.print("Enter an integer to delete: ");
+                int val = sc.nextInt();
+                treeInt.delete(treeInt.getRoot(), val);
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+            }
+            case "d" -> {
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+                System.out.print("Enter a double to delete: ");
+                double val = sc.nextDouble();
+                treeDouble.delete(treeDouble.getRoot(), val);
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+            }
+        }
+    }
 
-            else if (com.equals("d")) {
-                if (type.equals("s")) {
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a string to delete: ");
-                    inputS = sc.next();
-                    listS.delete(listS.getRoot(),inputS);
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                } else if (type.equals("d")) {
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number to delete: ");
-                    inputD = sc.nextDouble();
-                    listD.delete(listD.getRoot(),inputD);
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                } else if (type.equals("i")) {
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number to delete: ");
-                    inputI = sc.nextInt();
-                    listI.delete(listI.getRoot(),inputI);
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                } // else
-                System.out.print("Enter a command: ");
-            } // if : command d : Delete Item
+    private static void performPrint(
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
-            else if (com.equals("p")) {
-                if (type.equals("s")) {
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                } else if (type.equals("d")) {
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                } else if (type.equals("i")) {
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                } // else if
-                System.out.print("Enter a command: ");
-            } // if : command p : Print tree
+        switch (type) {
+            case "s" -> {
+                System.out.print("In-order: ");
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+            }
+            case "i" -> {
+                System.out.print("In-order: ");
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+            }
+            case "d" -> {
+                System.out.print("In-order: ");
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+            }
+        }
+    }
 
-            else if (com.equals("r")) {
-                if (type.equals("s")) {
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a string to search: ");
-                    inputS = sc.next();
-                    if (listS.retrieve(inputS)) {
-                        System.out.println("Item is present in the tree");
-                    } else {
-                        System.out.println("Item is not present in the tree");
-                    } // else
-                } else if (type.equals("d")) {
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number to search: ");
-                    inputD = sc.nextDouble();
-                    if (listD.retrieve(inputD)) {
-                        System.out.println("Item is present in the tree");
-                    } else {
-                        System.out.println("Item is not present in the tree");
-                    } // else
-                } else if (type.equals("i")) {
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number to search: ");
-                    inputI = sc.nextInt();
-                    if (listI.retrieve(inputI)) {
-                        System.out.println("Item is present in the tree");
-                    } else {
-                        System.out.println("Item is not present in the tree");
-                    } // else
-                } // else if
-                System.out.print("Enter a command: ");
-            } // if : command r : Retrieve Item
+    private static void performRetrieve(
+            Scanner sc,
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
-            else if (com.equals("l")) {
-                if (type.equals("s")) {
-                    System.out.println("The number of leaf nodes are "
-                        + listS.getNumLeafNodes(listS.getRoot()));
-                } else if (type.equals("d")) {
-                    System.out.println("The number of leaf nodes are "
-                        + listD.getNumLeafNodes(listD.getRoot()));
-                } else if (type.equals("i")) {
-                    System.out.println("The number of leaf nodes are "
-                        + listI.getNumLeafNodes(listI.getRoot()));
-                } // else if
-                System.out.print("Enter a command: ");
-            } // if : command l : Count Leaf Nodes
+        switch (type) {
+            case "s" -> {
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+                System.out.print("Enter a string to search: ");
+                String input = sc.next();
+                System.out.println(treeStr.retrieve(input) ?
+                        "Item is present in the tree" :
+                        "Item is not present in the tree");
+            }
+            case "i" -> {
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+                System.out.print("Enter an integer to search: ");
+                int val = sc.nextInt();
+                System.out.println(treeInt.retrieve(val) ?
+                        "Item is present in the tree" :
+                        "Item is not present in the tree");
+            }
+            case "d" -> {
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+                System.out.print("Enter a double to search: ");
+                double val = sc.nextDouble();
+                System.out.println(treeDouble.retrieve(val) ?
+                        "Item is present in the tree" :
+                        "Item is not present in the tree");
+            }
+        }
+    }
 
-            else if (com.equals("s")) {
-                if (type.equals("s")) {
-                    System.out.print("Single Parents: ");
-                    listS.getSingleParent(listS.getRoot());
-                    System.out.println();
-                } else if (type.equals("d")) {
-                    System.out.print("Single Parents: ");
-                    listD.getSingleParent(listD.getRoot());
-                    System.out.println();
-                } else if (type.equals("i")) {
-                    System.out.print("Single Parents: ");
-                    listI.getSingleParent(listI.getRoot());
-                    System.out.println();
-                } // else
-                System.out.print("Enter a command: ");
-            } // if : command s : Find Single Parents
+    private static void performLeafCount(
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
-            else if (com.equals("c")) {
-                if (type.equals("s")) {
-                    System.out.print("In-order: ");
-                    listS.inOrder(listS.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a string: ");
-                    inputS = sc.next();
-                    System.out.print(inputS + " cousins: ");
-                    listS.getCousins(inputS);
-                    System.out.println();
-                } else if (type.equals("d")) {
-                    System.out.print("In-order: ");
-                    listD.inOrder(listD.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number: ");
-                    inputD = sc.nextDouble();
-                    System.out.print(inputD + " cousins: ");
-                    listD.getCousins(inputD);
-                    System.out.println();
-                } else if (type.equals("i")) {
-                    System.out.print("In-order: ");
-                    listI.inOrder(listI.getRoot());
-                    System.out.println();
-                    System.out.print("Enter a number: ");
-                    inputI = sc.nextInt();
-                    System.out.print(inputI + " cousins: ");
-                    listI.getCousins(inputI);
-                    System.out.println();
-                } // else if
-                System.out.print("Enter a command: ");
-            } // if : command c : Find Cousins
+        int leaves = switch (type) {
+            case "s" -> treeStr.getNumLeafNodes(treeStr.getRoot());
+            case "i" -> treeInt.getNumLeafNodes(treeInt.getRoot());
+            case "d" -> treeDouble.getNumLeafNodes(treeDouble.getRoot());
+            default -> 0;
+        };
 
-            else if (com.equals("q")) {
-                System.out.println("Exiting the program...");
-                break;
-            } // if : command q : quit : done
+        System.out.println("The number of leaf nodes is " + leaves);
+    }
 
-            else {
-                System.out.print("Invalid command try again: " );
-            } // else : invalid command : done
+    private static void performSingleParents(
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
 
-        } // command loop : while
+        System.out.print("Single Parents: ");
+        switch (type) {
+            case "s" -> treeStr.getSingleParent(treeStr.getRoot());
+            case "i" -> treeInt.getSingleParent(treeInt.getRoot());
+            case "d" -> treeDouble.getSingleParent(treeDouble.getRoot());
+        }
+        System.out.println();
+    }
 
-    } // main
-} // BinarySearchTreeDriver
+    private static void performCousins(
+            Scanner sc,
+            String type,
+            BinarySearchTree<String> treeStr,
+            BinarySearchTree<Integer> treeInt,
+            BinarySearchTree<Double> treeDouble) {
+
+        switch (type) {
+            case "s" -> {
+                treeStr.inOrder(treeStr.getRoot());
+                System.out.println();
+                System.out.print("Enter a string: ");
+                String input = sc.next();
+                System.out.print(input + " cousins: ");
+                treeStr.getCousins(input);
+                System.out.println();
+            }
+            case "i" -> {
+                treeInt.inOrder(treeInt.getRoot());
+                System.out.println();
+                System.out.print("Enter an integer: ");
+                int val = sc.nextInt();
+                System.out.print(val + " cousins: ");
+                treeInt.getCousins(val);
+                System.out.println();
+            }
+            case "d" -> {
+                treeDouble.inOrder(treeDouble.getRoot());
+                System.out.println();
+                System.out.print("Enter a double: ");
+                double val = sc.nextDouble();
+                System.out.print(val + " cousins: ");
+                treeDouble.getCousins(val);
+                System.out.println();
+            }
+        }
+    }
+}
