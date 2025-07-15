@@ -3,231 +3,215 @@ package cs2720;
 import cs2720.NodeType;
 
 /**
-   Doubly Linked List class with all implemented methods.
+ * BinarySearchTree class implementing typical BST operations.
  */
 public class BinarySearchTree<T extends Comparable<T>> {
 
     private NodeType<T> root;
 
-    /**
-       Makes a new Binary Search Tree.
-    */
+    /** Constructs an empty Binary Search Tree. */
     public BinarySearchTree() {
-    } // BinarySearchTree
+        // No initialization needed for empty tree
+    }
 
-    /**
-       Retrieves the root.
-       @return returns a the root of the tree.
-     */
+    /** Returns the root node of the tree. */
     public NodeType<T> getRoot() {
         return root;
-    } // print
+    }
 
-    /**
-       Inserts an item into the tree according to its value.
-       @param item the new item being inserted.
-    */
+    /** 
+     * Inserts a new item into the BST.
+     * @param item the element to insert
+     */
     public void insert(T item) {
-        NodeType<T> node = new NodeType<T>();
-        node.info = item;
-        NodeType<T> loc = root;
-        NodeType<T> pred = null;
+        NodeType<T> newNode = new NodeType<>();
+        newNode.info = item;
 
         if (root == null) {
-            root = node;
+            root = newNode;
+            return;
+        }
+
+        NodeType<T> current = root;
+        NodeType<T> parent = null;
+
+        while (current != null) {
+            parent = current;
+            int cmp = item.compareTo(current.info);
+            if (cmp > 0) {
+                current = current.right;
+            } else if (cmp < 0) {
+                current = current.left;
+            } else {
+                throw new IllegalStateException("Item already exists in tree.");
+            }
+        }
+
+        if (item.compareTo(parent.info) > 0) {
+            parent.right = newNode;
         } else {
-            while (loc != null) {
-                if (item.compareTo(loc.info) > 0) {
-                    pred = loc;
-                    loc = loc.right;
-                } else if (item.compareTo(loc.info) < 0) {
-                    pred = loc;
-                    loc = loc.left;
-                } else if (item.compareTo(loc.info) == 0) {
-                    throw new IllegalStateException("Item already exists");
-                } // else
-            } // while
-            if (item.compareTo(pred.info) > 0) {
-                pred.right = node;
-            } else if (item.compareTo(pred.info) < 0) {
-                pred.left = node;
-            } // else
-        } // else
-    } // insert
+            parent.left = newNode;
+        }
+    }
 
     /**
-       Deletes the node in the tree that contains an item equal to the
-       item parameter.
-       @param item the item to be removed.
-       @param tree the root of the tree.
-       @return the node that is to be deleted.
-    */
+     * Deletes a node containing the specified item from the tree.
+     * @param tree the current root
+     * @param item the item to delete
+     * @return the new root after deletion
+     */
     public NodeType<T> delete(NodeType<T> tree, T item) {
         if (tree == null) {
             System.out.println("Item not present");
-            return tree;
-        } // if
-        if (item.compareTo(tree.info) < 0) {
-            tree.left = delete(tree.left,item);
-        } else if (item.compareTo(tree.info) > 0) {
-            tree.right = delete(tree.right,item);
-        } else {
-            if (tree.left == null) {
-                return tree.right;
-            } // if
-            if (tree.right == null) {
-                return tree.left;
-            } // if
-
-            NodeType<T> succ = getSuccessor(tree);
-            tree.info = succ.info;
-            tree.right = delete(tree.right, succ.info);
-
-        } // else
-        return tree;
-    } // delete
-
-    /**
-      Finds the proper successor for when a node has two children.
-      @param loc the node that we start at.
-      @return the node that we are using as our successor.
-     */
-    public NodeType<T> getSuccessor(NodeType<T> loc) {
-        loc = loc.right;
-        while (loc != null && loc.left != null) {
-            loc = loc.left;
+            return null;
         }
-        return loc;
-    } //getSuccessor
+
+        int cmp = item.compareTo(tree.info);
+        if (cmp < 0) {
+            tree.left = delete(tree.left, item);
+        } else if (cmp > 0) {
+            tree.right = delete(tree.right, item);
+        } else {
+            if (tree.left == null) return tree.right;
+            if (tree.right == null) return tree.left;
+
+            NodeType<T> successor = getSuccessor(tree);
+            tree.info = successor.info;
+            tree.right = delete(tree.right, successor.info);
+        }
+        return tree;
+    }
 
     /**
-       Prints the tree in order.
-       @param tree is the tree that is being printed.
+     * Finds the in-order successor for a node with two children.
+     * @param node the node whose successor is sought
+     * @return the successor node
      */
-    public void inOrder(NodeType<T> tree) {
-        if (tree != null) {
-            inOrder(tree.left);
-            System.out.print(tree.info + " ");
-            inOrder(tree.right);
-        } // else
-    } // inOrder
+    public NodeType<T> getSuccessor(NodeType<T> node) {
+        NodeType<T> curr = node.right;
+        while (curr != null && curr.left != null) {
+            curr = curr.left;
+        }
+        return curr;
+    }
 
     /**
-       Finds out whether or not the item given exists.
-       @param item the item to be found
-       @return true or false depending on existence
+     * Performs in-order traversal to print the tree contents.
+     * @param node the current node
+     */
+    public void inOrder(NodeType<T> node) {
+        if (node == null) return;
+        inOrder(node.left);
+        System.out.print(node.info + " ");
+        inOrder(node.right);
+    }
+
+    /**
+     * Checks whether an item exists in the BST.
+     * @param item the item to find
+     * @return true if found; false otherwise
      */
     public boolean retrieve(T item) {
-        NodeType<T> loc = root;
-        NodeType<T> pred = null;
+        NodeType<T> current = root;
 
-        if (root == null) {
-            return false;
-        } else {
-            while (loc != null) {
-                if (item.compareTo(loc.info) > 0) {
-                    pred = loc;
-                    loc = loc.right;
-                } else if (item.compareTo(loc.info) < 0) {
-                    pred = loc;
-                    loc = loc.left;
-                } else if (item.compareTo(loc.info) == 0) {
-                    return true;
-                } // else
-            } // while
-            return false;
-        } // else
-    } // retrieve
+        while (current != null) {
+            int cmp = item.compareTo(current.info);
+            if (cmp > 0) {
+                current = current.right;
+            } else if (cmp < 0) {
+                current = current.left;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
-       Finds the number of leaf nodes in the tree.
-       @param tree the root of the tree
-       @return the number of leaf nodes
+     * Counts the number of leaf nodes in the tree.
+     * @param node the current node
+     * @return the count of leaf nodes
      */
-    public int getNumLeafNodes(NodeType<T> tree) {
-        if (tree == null) {
-            return 0;
-        } else if (tree.right == null && tree.left == null) {
-            return 1;
-        } else {
-            return getNumLeafNodes(tree.right) + getNumLeafNodes(tree.left);
-        } // else
-    } // getNumLeafNodes
+    public int getNumLeafNodes(NodeType<T> node) {
+        if (node == null) return 0;
+        if (node.left == null && node.right == null) return 1;
+        return getNumLeafNodes(node.left) + getNumLeafNodes(node.right);
+    }
 
     /**
-       Finds the single parent nodes in the tree.
-       @param tree the root of the tree
-    */
-    public void getSingleParent(NodeType<T> tree) {
-        if (tree != null) {
-            getSingleParent(tree.left);
-            if (tree.left == null ^ tree.right == null) {
-                System.out.print(tree.info + " ");
-            } // if
-            getSingleParent(tree.right);
-        } // if
-    } // getSingleParent
+     * Prints all nodes that have exactly one child.
+     * @param node the current node
+     */
+    public void getSingleParent(NodeType<T> node) {
+        if (node == null) return;
+
+        getSingleParent(node.left);
+
+        boolean hasSingleChild = (node.left == null) ^ (node.right == null);
+        if (hasSingleChild) {
+            System.out.print(node.info + " ");
+        }
+
+        getSingleParent(node.right);
+    }
 
     /**
-       Finds the cousin nodes in the tree of the given node.
-       @param item the item wanting to find cousins of
-    */
+     * Prints cousin nodes of a specified item.
+     * @param item the item whose cousins are sought
+     */
     public void getCousins(T item) {
-        int level = level(item);
-
-        printLevel(root, item, level);
-    } // getCousins
-
-    /**
-       Prints a specific level besides given node and siblings.
-       @param tree the root of the tree
-       @param item the item wanting to find cousins of
-       @param level the level we want to print
-    */
-    public void printLevel(NodeType<T> tree, T item, int level) {
-        if (tree != null) {
-            if (level == 0 && item.compareTo(tree.info) != 0) {
-                System.out.print(tree.info + " ");
-            } else if (tree.left != null && tree.right != null) {
-                if (item.compareTo(tree.left.info) != 0 && item.compareTo(tree.right.info) != 0) {
-                    printLevel(tree.left,item,level - 1);
-                    printLevel(tree.right,item,level - 1);
-                } // if
-            } else if (tree.left != null) {
-                if (item.compareTo(tree.left.info) != 0) {
-                    printLevel(tree.left,item,level - 1);
-                } // if
-            } else if (tree.right != null) {
-                if (item.compareTo(tree.right.info) != 0) {
-                    printLevel(tree.right,item,level - 1);
-                } // if
-            } // if
-        }  // if
-    } // PrintLevel
+        int targetLevel = findLevel(item);
+        printCousinsAtLevel(root, item, targetLevel);
+    }
 
     /**
-       Finds the level of the node.
-       @param item the root of the tree
-       @return an integer of what level
-    */
-    public int level(T item) {
+     * Prints all nodes at a given level that are not siblings of the given item.
+     * @param node the current node
+     * @param item the item whose cousins are sought
+     * @param level the target level
+     */
+    public void printCousinsAtLevel(NodeType<T> node, T item, int level) {
+        if (node == null) return;
+
+        if (level == 0 && !item.equals(node.info)) {
+            System.out.print(node.info + " ");
+        } else if (node.left != null && node.right != null) {
+            if (!item.equals(node.left.info) && !item.equals(node.right.info)) {
+                printCousinsAtLevel(node.left, item, level - 1);
+                printCousinsAtLevel(node.right, item, level - 1);
+            }
+        } else if (node.left != null) {
+            if (!item.equals(node.left.info)) {
+                printCousinsAtLevel(node.left, item, level - 1);
+            }
+        } else if (node.right != null) {
+            if (!item.equals(node.right.info)) {
+                printCousinsAtLevel(node.right, item, level - 1);
+            }
+        }
+    }
+
+    /**
+     * Determines the level (depth) of the node containing the item.
+     * @param item the item to find
+     * @return the level (root is level 0)
+     */
+    public int findLevel(T item) {
         int level = 0;
-        NodeType<T> loc = root;
+        NodeType<T> current = root;
 
-        while (loc != null) {
-            if (item.compareTo(loc.info) > 0) {
-                loc = loc.right;
+        while (current != null) {
+            int cmp = item.compareTo(current.info);
+            if (cmp > 0) {
+                current = current.right;
                 level++;
-            } else if (item.compareTo(loc.info) < 0) {
-                loc = loc.left;
+            } else if (cmp < 0) {
+                current = current.left;
                 level++;
-            } else if (item.compareTo(loc.info) == 0) {
+            } else {
                 return level;
-            } // else
-        } // while
+            }
+        }
         return level;
-    } // level
-
-
-
-} // BinarySearchTree
+    }
+}
